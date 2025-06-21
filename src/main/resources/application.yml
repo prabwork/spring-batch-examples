@@ -7,3 +7,10 @@ spring:
     driverClassName: org.h2.Driver
     username: sa
     password: password
+
+logging.level:
+  root: ERROR
+  com:
+    prabwork:
+      springbatch:
+        config: INFO

@@ -24,7 +24,7 @@ import org.springframework.transaction.PlatformTransactionManager
 @Configuration
 class FlowJobConfiguration {
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(FlowJobConfiguration.javaClass)
+        private val LOGGER: Logger = LoggerFactory.getLogger(FlowJobConfiguration::class.java)
     }
 
     @Bean
@@ -74,7 +74,7 @@ class FlowJobConfiguration {
             .tasklet({ contribution, _ ->
                 val context = contribution.stepExecution.executionContext
                 val alpha = context.getString("ALPHA")
-                LOGGER.error("ALPHA for this step is $alpha")
+                LOGGER.info("ALPHA for this step is $alpha")
                 RepeatStatus.FINISHED
             }, transactionManager)
             .build()
@@ -88,7 +88,7 @@ class FlowJobConfiguration {
             .tasklet({ contribution, _ ->
                 val context = contribution.stepExecution.executionContext
                 val digit = context.getInt("DIGIT")
-                LOGGER.error("DIGIT for this step is $digit and tasklet is $this and hashcode is ${this.hashCode()}")
+                LOGGER.info("DIGIT for this step is $digit")
                 RepeatStatus.FINISHED
             }, transactionManager)
             .build()
@@ -99,9 +99,9 @@ class FlowJobConfiguration {
             val alphabets = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             val contexts = mutableMapOf<String, ExecutionContext>()
             for (alpha in alphabets) {
-                val context = ExecutionContext();
-                context.putString("ALPHA", alpha.toString())
-                contexts["ALPHA-" + alpha] = context;
+                contexts["ALPHA-$alpha"] = ExecutionContext().apply {
+                    putString("ALPHA", alpha.toString())
+                }
             }
             contexts
         }
@@ -111,9 +111,9 @@ class FlowJobConfiguration {
         return Partitioner { _ ->
             val contexts = mutableMapOf<String, ExecutionContext>()
             for (digit in 0..9) {
-                val context = ExecutionContext();
-                context.putInt("DIGIT", digit)
-                contexts["ALPHA-" + digit] = context;
+                contexts["DIGIT-$digit"] = ExecutionContext().apply {
+                    putInt("DIGIT", digit)
+                }
             }
             contexts
         }
@@ -121,7 +121,7 @@ class FlowJobConfiguration {
 
     fun flowDecider(): JobExecutionDecider {
         return JobExecutionDecider { jobExecution, _ ->
-            val route: String = jobExecution.getJobParameters().getString("route") ?: "Test"
+            val route: String = jobExecution.jobParameters.getString("route") ?: "ALPHA"
             FlowExecutionStatus(route)
         }
     }
@@ -132,7 +132,7 @@ class FlowJobConfiguration {
         jobLauncher: JobLauncher,
         flowJob: Job,
     ): CommandLineRunner {
-        val parameter = JobParameter<String>("DIGIT", String::class.java)
+        val parameter: JobParameter<String> = JobParameter("DIGIT", String::class.java)
         val params = mutableMapOf<String, JobParameter<*>>(Pair("route", parameter))
         return CommandLineRunner {
             jobLauncher.run(flowJob, JobParameters(params))
