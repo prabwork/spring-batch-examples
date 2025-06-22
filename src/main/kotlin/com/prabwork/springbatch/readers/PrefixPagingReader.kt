@@ -25,7 +25,7 @@ open class PrefixPagingReader : AbstractPagingItemReader<String>() {
             .let {
                 BufferedReader(InputStreamReader(it))
             }
-        LOGGER.info("For Digit $prefix In before step method and This is $this and hashcode is ${this.hashCode()}")
+        LOGGER.info("For Prefix $prefix In before step method and This is $this and hashcode is ${this.hashCode()}")
     }
 
     @AfterStep

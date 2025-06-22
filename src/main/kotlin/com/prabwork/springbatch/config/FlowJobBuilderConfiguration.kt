@@ -7,7 +7,10 @@ import org.springframework.batch.core.JobParameter
 import org.springframework.batch.core.JobParameters
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.StepScope
+import org.springframework.batch.core.job.builder.FlowBuilder
+import org.springframework.batch.core.job.builder.FlowJobBuilder
 import org.springframework.batch.core.job.builder.JobBuilder
+import org.springframework.batch.core.job.flow.Flow
 import org.springframework.batch.core.job.flow.FlowExecutionStatus
 import org.springframework.batch.core.job.flow.JobExecutionDecider
 import org.springframework.batch.core.launch.JobLauncher
@@ -21,8 +24,8 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.DependsOn
 import org.springframework.transaction.PlatformTransactionManager
 
-// @Configuration
-class FlowJobConfiguration {
+@Configuration
+class FlowJobBuilderConfiguration {
     companion object {
         private const val PREFIX = "PREFIX"
     }
@@ -33,12 +36,20 @@ class FlowJobConfiguration {
         transactionManager: PlatformTransactionManager
     ): Job {
         val flowDecider = flowDecider()
-        return JobBuilder("flow-job-ex", jobRepository)
+        val alphaFlow: Flow = FlowBuilder<Flow>("alpha-step")
+            .start(alphaStep(jobRepository, transactionManager))
+            .end()
+        val digitFlow: Flow = FlowBuilder<Flow>("digit-step")
+            .start(digitStep(jobRepository, transactionManager))
+            .end()
+        return FlowJobBuilder(JobBuilder("flow-job-builder-ex", jobRepository))
             .start(flowDecider)
-            .from(flowDecider).on("ALPHA")
-            .to(alphaStep(jobRepository, transactionManager))
-            .from(flowDecider).on("DIGIT")
-            .to(digitStep(jobRepository, transactionManager))
+            .from(flowDecider)
+            .on("DIGIT")
+            .to(digitFlow)
+            .from(flowDecider)
+            .on("ALPHA")
+            .to(alphaFlow)
             .end()
             .build()
     }
