@@ -12,5 +12,4 @@ logging.level:
   root: ERROR
   com:
     prabwork:
-      springbatch:
-        config: INFO
+      springbatch: INFO
