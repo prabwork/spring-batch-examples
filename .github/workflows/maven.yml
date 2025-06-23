@@ -33,5 +33,5 @@ jobs:
       if: github.ref == 'refs/heads/main'
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ github.repository }}-${{ github.ref_name }}-run${{ github.run_number }}
+        name: ${{ github.ref_name }}-run${{ github.run_number }}
         path: target/*.jar
