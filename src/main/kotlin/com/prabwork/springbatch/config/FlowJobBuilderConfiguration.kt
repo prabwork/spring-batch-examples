@@ -84,7 +84,7 @@ class FlowJobBuilderConfiguration {
         return StepBuilder("step-alpha-worker", jobRepository)
             .chunk<String, String>(10, transactionManager)
             .reader(prefixPagingReader())
-            .writer(digitWriter())
+            .writer(prefixWriter())
             .build()
     }
 
@@ -95,7 +95,7 @@ class FlowJobBuilderConfiguration {
         return StepBuilder("step-digit-worker", jobRepository)
             .chunk<String, String>(10, transactionManager)
             .reader(prefixPagingReader())
-            .writer(digitWriter())
+            .writer(prefixWriter())
             .build()
     }
 
@@ -105,7 +105,7 @@ class FlowJobBuilderConfiguration {
 
     @Bean
     @StepScope
-    fun digitWriter(): PrefixWriter = PrefixWriter()
+    fun prefixWriter(): PrefixWriter = PrefixWriter()
 
     fun alphaPartitioner(): Partitioner {
         return Partitioner { _ ->
